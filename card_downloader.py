@@ -22,16 +22,14 @@ import re
 #定义输出结果的编码为utf-8
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer,encoding='utf-8')
 
-
 class Robot(object):
 
     def work(self):
         url = r'http://ka.05321888.com/ka/taocan/index.html'
-        html = self.get_decoded_html(r'http://ka.05321888.com/ka/taocan/index.html')
+        html = self.get_decoded_html(url)
         cards_info = self.get_info(html)
-        # self.generate_excel(cards_info)
-        self.connect_sqlite(cards_info)
-
+        self.write_into_db(cards_info)
+        self.download_images(cards_info)
 
     def get_decoded_html(self,url):
         headers = {
@@ -142,7 +140,7 @@ class Robot(object):
         wb.save('./流量套餐列表_数据库.csv')
         wb.save('./流量套餐列表_数据库.xls')
 
-    def connect_sqlite(self,cards_data):
+    def write_into_db(self,cards_data):
         con = sqlite3.connect("cards_data.db")
         cur = con.cursor()
         # no:编号； card_name:卡名； addition:附加优惠信息； detail_url:套餐链接； ispublish:是否发布； state:生效状态
@@ -159,10 +157,23 @@ class Robot(object):
         #print(res.fetchall())
         self.export_excel_from_db(res.fetchall())
 
+    def download_images(self,cards_info):
+        con = sqlite3.connect("cards_data.db")
+        cur = con.cursor()
+        # print(cards_info)
+        for card in cards_info:
+            code = card['code']
+            if(code!='0038'):
+                if(code!='1340'):
+                    card_name =re.search(r'[\u4e00-\u9fa5]*卡',card['card_name'],re.M|re.I).group()
+                else:
+                    card_name = '联通颜悦卡'
+                file_name = code+'_'+card_name
+                print(file_name)
+        
 
 
 if __name__ == '__main__':
     r1 = Robot()
     r1.work()
-    # get_monthly_cost()
     
