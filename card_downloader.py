@@ -18,6 +18,7 @@ from bs4 import BeautifulSoup
 import xlwt
 import sqlite3
 import re
+import os
 
 #定义输出结果的编码为utf-8
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer,encoding='utf-8')
@@ -44,7 +45,6 @@ class Robot(object):
         'Accept-Encoding': ''
         }
 
-        url = r'http://ka.05321888.com/ka/taocan/index.html'
 
         request = urllib.request.Request(url, headers = headers)
         response = urllib.request.urlopen(request)
@@ -168,9 +168,15 @@ class Robot(object):
                     card_name =re.search(r'[\u4e00-\u9fa5]*卡',card['card_name'],re.M|re.I).group()
                 else:
                     card_name = '联通颜悦卡'
-                file_name = code+'_'+card_name
-                print(file_name)
-        
+                dir_name = code+'_'+card_name
+                print(dir_name)
+        isExists = os.path.exists(dir_name)
+        if not isExists:
+            #os.mkdir(dir_name)
+            print(self.get_decoded_html(card['detail_url']))
+
+
+    
 
 
 if __name__ == '__main__':
