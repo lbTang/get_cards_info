@@ -19,15 +19,18 @@ import xlwt
 import sqlite3
 import re
 import os
+import requests
+import time
 
 #定义输出结果的编码为utf-8
-# sys.stdout = io.TextIOWrapper(sys.stdout.buffer,encoding='utf-8')
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer,encoding='utf-8')
 
 class Robot(object):
 
     def work(self):
         url = r'http://ka.05321888.com/ka/taocan/index.html'
         html = self.get_decoded_html(url)
+        # print(html)
         cards_info = self.get_info(html)
         self.write_into_db(cards_info)
         self.download_images(cards_info)
@@ -168,25 +171,33 @@ class Robot(object):
                     card_name =re.search(r'[\u4e00-\u9fa5]*卡',card['card_name'],re.M|re.I).group()
                 else:
                     card_name = '联通颜悦卡'
-                dir_name = code+'_'+card_name
+                dir_name = './images/'+code+'_'+card_name
                 #print(dir_name)
                 isExists = os.path.exists(dir_name)
                 if not isExists:
                     os.mkdir(dir_name)
-                    detail_html = self.get_decoded_html(card['detail_url'])
-                    soup = BeautifulSoup(detail_html,"html.parser",from_encoding="gbk")
-                    img_style = "display: inline-block; width: 100%; max-width: 100%; height: auto;"
-                    args = {"style":img_style}
-                    print(code)
-                    print(args["style"])
-                    imgs = soup.find_all('img',attrs=args)
-                    for img in imgs:
-                        print(img)
-                        img_name = img['src']
-                        isFileExists = os.path.exists(dir_name+'/'+img_name)
-                        if not isFileExists:
-                            img_url = 'http://ka.05321888.com/ka/taocan/'+img_name
-                            print(img_url)
+                detail_html = self.get_decoded_html(card['detail_url'])
+                soup = BeautifulSoup(detail_html,"html.parser",from_encoding="gbk")
+                img_style = "display: inline-block; width: 100%; max-width: 100%; height: auto;"
+                args = {"style":img_style}
+                # print(code)
+                # print(args["style"])
+                imgs = soup.find_all('img',attrs=args)
+                for img in imgs:
+                    print(img)
+                    img_name = img['src']
+                    img_local_path = dir_name+'/'+img_name
+                    print(img_local_path)
+                    isFileExists = os.path.exists(img_local_path)
+                    if not isFileExists:
+                        img_url = 'http://ka.05321888.com/ka/taocan/'+img_name
+                        print(img_url)
+                        r = requests.get(img_url, stream=True)    
+                        with open(img_local_path, 'wb') as f:
+                            for chunk in r.iter_content(chunk_size=32):
+                                f.write(chunk)
+                    time.sleep(1)
+            time.sleep(5)
 
 
 
