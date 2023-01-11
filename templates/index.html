@@ -6,33 +6,37 @@
 
 {% block body %}
 <div class="content">
-    <h1>Task Master</h1>
-    {% if tasks|length < 1%}
-    <h4>There is no tasks in the database.</h4>
+    <h1>Cards</h1>
+    {% if cards|length < 1%}
+    <h4>There is no cards in the database.</h4>
     {% else %}
     <table>
+    
         <tr>
-            <th>Task</th>
-            <th>Added</th>
-            <th>Actions</th>
+            <th><a href="?sort=card_no">card_no</a></th>
+            <th><a href="?sort=card_name">card_name</a></th>
+            <th><a href="?sort=plan_detail">plan_detail</a></th>
+            <th><a href="?sort=addition">addition</a></th>
+            <th><a href="?sort=monthly_cost">monthly_cost</a></th>
+            <th><a href="?sort=full_name">full_name</a></th>
+            <th><a href="?sort=detail_url">detail_url</a></th>
         </tr>
-        {% for task in tasks %}
+    
+        {% for card in cards | sort(attribute=sort_attr) %}
         <tr>
-            <td>{{ task.content}}</td>
-            <td>{{ task.date_created.date()}}</td>
-            <td>
-                <a href="/delete/{{task.id}}">Delete</a>
-                <br/>
-                <a href="/update/{{task.id}}">Update</a>
-            </td>
+            <td>{{ card.card_no}}</td>
+            <td>{{ card.card_name }}</td>
+            <td>{{ card.plan_detail}}</td>
+            <td>{{ card.addition}}</td>
+            <td>{{ card.monthly_cost}}</td>
+            <td>{{ card.full_name}}</td>
+            <td><a href="{{card.detail_url}}">{{ card.detail_url }}</a></td>
         </tr>
         {% endfor %}
     </table>
     {% endif %}
-    <form action="/" method="POST">
-        <input type="text" name="content" id="content">
-        <input type="submit" value="Add Task">
-    </form>
 
 </div>
 {% endblock %}
+
+

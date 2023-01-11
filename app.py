@@ -3,63 +3,63 @@ from flask_sqlalchemy import SQLAlchemy
 import datetime
 
 from werkzeug.utils import redirect
+from cards_downloader import cards_downloader
+
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'  #这里可以使用其他数据库
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test2.db'  #这里可以使用其他数据库
 db = SQLAlchemy(app) #数据库初始化
 
 
 # 新建 Model
-class Todo(db.Model):
-    id = db.Column(db.Integer, primary_key=True)   #主键
-    content = db.Column(db.String(200),nullable=False)  #待办事项内容
-    completed = db.Column(db.Integer, default=0) #完成状态
+class Phone_Card(db.Model):
+    __tablename__ = "cards_info"
+
+    card_no = db.Column(db.String(200),nullable=False,primary_key=True)  #卡编号
+    card_name = db.Column(db.String(200)) #卡名
+    plan_detail = db.Column(db.String(200)) #套餐详情
+    addition = db.Column(db.String(200)) #附加说明
+    monthly_cost = db.Column(db.String(200)) #流量卡月租
+    full_name = db.Column(db.String(200)) #完整卡名
+    detail_url = db.Column(db.String(200)) #流量卡链接
+    card_state = db.Column(db.Integer,default=1) #卡的状态。1：生效，0：失效。
+    is_published = db.Column(db.Integer,default=0) #是否已发布。0：未发布，1已发布。
     date_created = db.Column(db.DateTime,default=datetime.datetime.utcnow)  #创建时间
-    
+    date_expiration = db.Column(db.DateTime,default= datetime.datetime(2099, 12, 30, 0, 0)  # 用指定日期时间创建 datetime 对象
+
+) #失效时间
+     
     def __repr__(self):
-        return '<Task %r>' % self.id     #%r和%s比，较为简单和直接
+        return '<流量卡 %r %r>' % (self.card_no,self.card_name)     #%r和%s比，较为简单和直接
 
 
-@app.route('/',methods=['POST', 'GET'])
+
+@app.route('/',methods=['GET'])
 def index():
-    if request.method =='POST':
-        task_content = request.form['content']
-        new_task = Todo(content=task_content)
+    card_downloader = cards_downloader()
+    cards_info = card_downloader.work()
+    for card in cards_info:
+        new_card = Phone_Card(card_no = card['card_no'],
+                              card_name = card['card_name'],
+                              full_name = card['full_name'],
+                              plan_detail = card['plan_detail'],
+                              addition = card['addition'],
+                              monthly_cost = card['monthly_cost'],
+                              detail_url = card['detail_url']
+                              )
         try:
-            db.session.add(new_task)
+            db.session.add(new_card)
             db.session.commit()
-            return redirect('/')
         except:
-            return '录入任务存在问题！'
-    else:
-        tasks = Todo.query.order_by(Todo.date_created).all()
-        return render_template('index.html',tasks=tasks)
+            app.logger.error('录入流量卡存在问题！')
+    cards = Phone_Card.query.all()
+    sort_attr = request.args.get("sort",'')
+    return render_template('index.html', cards = cards, sort_attr = sort_attr)
 
-@app.route('/delete/<int:id>')
-def delete(id):
-    task_to_delete = Todo.query.get_or_404(id)
-
-    try:
-        db.session.delete(task_to_delete)
-        db.session.commit()
-        return redirect('/')
-    except:
-        return '删除存在问题！'
-
-@app.route('/update/<int:id>',methods=['GET','POST'])
-def update(id):
-    task = Todo.query.get_or_404(id)
-    if request.method == 'POST':
-        task.content = request.form['content']
-        try:
-            db.session.commit()
-            return redirect('/')
-        except:
-            return '修改出现问题！'
-    else:
-        return render_template('update.html',task=task)
 
 
 if __name__ == "__main__":
+    with app.app_context():
+        db.create_all() 
     app.run(debug=True)
 
