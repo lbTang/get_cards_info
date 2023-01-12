@@ -54,6 +54,23 @@ class cards_downloader(object):
                 cards_info.append({'card_no':card_no,'card_name':card_name,'plan_detail':plan_detail,'addition':addition,'monthly_cost':monthly_cost,'full_name':full_name,'detail_url':detail_url})
         return cards_info
 
+    def connect_sqlite(self,cards_data):
+        con = sqlite3.connect("cards_data.db")
+        cur = con.cursor()
+        # no:编号； card_name:卡名； addition:附加优惠信息； detail_url:套餐链接； ispublish:是否发布； state:生效状态
+        cur.execute("CREATE TABLE IF NOT EXISTS cards(no, card_name, addition, monthly_cost, detail_url, ispublish, state)")
+        fetch_cardNos = cur.execute("SELECT no FROM cards").fetchall()
+        card_no_list = [item[0] for item in fetch_cardNos]
+        for card in cards_data:
+            if card['code'] not in card_no_list:
+                cur.execute("""INSERT INTO cards VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                    (card["code"],card["card_name"],card["addition"],card["monthly_cost"],card["detail_url"],0,1)
+                )
+        con.commit()
+        res = cur.execute("SELECT * FROM cards")
+        #print(res.fetchall())
+        self.export_excel_from_db(res.fetchall())
+
     def work(self):
         url = r'http://ka.05321888.com/ka/taocan/index.html'
         html = self.get_decoded_html(url)
