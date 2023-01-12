@@ -24,8 +24,7 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer,encoding='utf-8')
 
 class Image_downloader(object):
 
-    def work(self):
-        url = r'http://ka.05321888.com/ka/taocan/1459.html'
+    def work(self,url):
         html = self.get_decoded_html(url)
         self.download_images(html)
 
@@ -62,7 +61,7 @@ class Image_downloader(object):
         image_detail_url = "http://ka.05321888.com/ka/taocan/" + img_list[2]['src']
         image_icon_name = card_name + "_图标.jpg"
         image_detail_name = card_name + "_详情.jpg"
-        local_dir = "images/" + card_no + "_" + card_name + "/"
+        local_dir = "images/"
 
         if not os.path.exists(local_dir):
             os.makedirs(local_dir)
@@ -72,7 +71,11 @@ class Image_downloader(object):
         with open(local_dir+image_detail_name, 'wb') as f:
             f.write(requests.get(image_detail_url).content)
 
+        
+        
+
 if __name__ == '__main__':
     r1 = Image_downloader()
-    r1.work()
+    url = r'http://ka.05321888.com/ka/taocan/1459.html'
+    r1.work(url)
     
