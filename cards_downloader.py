@@ -1,85 +1,153 @@
 # -*- encoding: utf-8 -*-
 '''
-@File    :   cards_downloader.py
+@File    :   card_downloader.py
 @Time    :   2021/01/25 20:26:35
 @Author  :   Tang Lianbin 
 @Version :   1.0
 @Desc    :   None
 '''
 
-import io,os,sys
+
+import urllib.request
+import io
+import sys
 import json
+import urllib.parse
 import bs4
 from bs4 import BeautifulSoup
 import xlwt
 import sqlite3
 import re
-import requests
-import time
 
 #定义输出结果的编码为utf-8
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer,encoding='utf-8')
 
-class cards_downloader(object):
+
+class Robot(object):
+
+    def work(self):
+        url = r'http://ka.05321888.com/ka/taocan/index.html'
+        html = self.get_decoded_html(r'http://ka.05321888.com/ka/taocan/index.html')
+        cards_info = self.get_info(html)
+        # self.generate_excel(cards_info)
+        self.connect_sqlite(cards_info)
+
 
     def get_decoded_html(self,url):
-        html = requests.get(url).content
-        return html.decode('gbk','ignore')
+        headers = {
+        'Connection':' keep-alive',
+        'Pragma':' no-cache',
+        'Cache-Control':' no-cache',
+        'Accept':'application/json, text/plain, */*',
+        'User-Agent':' Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36',
+        'DNT':' 1',
+        'Accept-Language':' zh-CN,zh;q=0.9,zh-TW;q=0.8',
+        'Cookie':'',
+        'Accept-Encoding': ''
+        }
+
+        url = r'http://ka.05321888.com/ka/taocan/index.html'
+
+        request = urllib.request.Request(url, headers = headers)
+        response = urllib.request.urlopen(request)
+        html = response.read()
+        #print(html)
+        html_decoded = html.decode('gbk','ignore')
+        return html_decoded
     
-    def get_cards_info(self,html):
+    def get_info(self,html):
         soup = BeautifulSoup(html,"html.parser",from_encoding="gbk")
         tbody = soup.find_all('tbody')[0]
 
-
-        cards_info = []
+        result = []
         for tr in tbody.children:
             if isinstance(tr,bs4.element.Tag):
+                # 接口信息：
+                # 1.card_no:编号； 
+                # 2.card_name:卡名； 
+                # 3.addition:附加优惠信息； 
+                # 4.monthly_cost:月租;
+                # 5.detail_image_url:详细图片信息； 
+                # 6.detail_info_url:详细说明信息;             
+
+                #（1）card_no编号
+                page = tr['onclick'].split('\'')[1]
+                card_no = page.split('.')[0]
+                
+                #（2）card_name卡名
                 td = tr.find('td')
-                text = td.text
-                code = re.findall(r'\d+',text)[0]
-                if (code!='0038'):
-                    result = re.match(r'(\d+)?.*?([\u4e00-\u9fa5]+)(\d+元*)包*(.*)', text, re.M|re.I)
-                    card_no = result.group(1) #1.流量卡编号
-                    card_name = result.group(2) #2.卡名
-                    full_name = text #3.完整卡名
-                    monthly_cost = result.group(3) #4.月租
+                card_name = td.text
+                #（3）addition附加优惠信息
+                addition = ''
+                #（4）monthly_cost月租
+                if (card_no!='0038'):
+                    monthly_cost = re.search(r'(\d+元*)包', card_name, re.M|re.I).group(1)
                     if monthly_cost[-1] in '0123456789':
                         monthly_cost+='元'
-                    plan_detail = result.group(4) #5.套餐流量
-                    addition = '' # addition =  #6.附加说明
-                    for i in tr.find_all('i'):
-                        if(i.text != ""):
-                            addition=addition+'|'+i.text
-                    detail_url = 'http://ka.05321888.com/ka/taocan/'+ card_no + '.html' #7.详情链接              
-                cards_info.append({'card_no':card_no,'card_name':card_name,'plan_detail':plan_detail,'addition':addition,'monthly_cost':monthly_cost,'full_name':full_name,'detail_url':detail_url})
-        return cards_info
+                else:
+                    monthly_cost = ''
+
+                for i in tr.find_all('i'):
+                    if(i.text != ""):
+                        addition=addition+' '+i.text
+                #（5）detail_image_url:详细图片信息
+                detail_image_url = "http://ka.05321888.com/ka/taocan/"+ card_no + ".html"
+                # （6）detail_info_url:详细说明信息
+                detail_info_url = "http://ka.05321888.com/ka/taocan/xiangguan/"+ card_no + ".html"
+
+                result.append({'card_no':card_no,'card_name':card_name,'addition':addition,'monthly_cost':monthly_cost,'detail_image_url':detail_image_url,'detail_info_url':detail_info_url})
+        return result
+    
+    def export_excel_from_web(self,write_info):
+        wb = xlwt.Workbook()
+        ws = wb.add_sheet('sheet1')
+        # 写入第一行内容  ws.write(a, b, c)  a：行，b：列，c：内容
+        titleList = ['编号', '卡名', '附加', '月租','套餐链接','发布状态']
+        for i in range(0, len(titleList)):
+            ws.write(0, i, titleList[i])
+
+        # 所需获取数据对应key
+        jsonKeyLIst = ['code', 'card_name', 'addition', 'monthly_cost','detail_image_url']
+
+        for i in range(0, len(write_info)):
+            for j in range(0, len(jsonKeyLIst)):
+                # 文件中已写入一行title，所以这里写入内容时行号为i+1而非i
+                # 列号为j
+                ws.write(i + 1, j, write_info[i][jsonKeyLIst[j]])
+
+        # 保存文件
+        wb.save('./流量套餐列表_网络.csv')
+        wb.save('./流量套餐列表_网络.xls')
+
 
     def connect_sqlite(self,cards_data):
         con = sqlite3.connect("cards_data.db")
         cur = con.cursor()
-        # no:编号； card_name:卡名； addition:附加优惠信息； detail_url:套餐链接； ispublish:是否发布； state:生效状态
-        cur.execute("CREATE TABLE IF NOT EXISTS cards(no, card_name, addition, monthly_cost, detail_url, ispublish, state)")
-        fetch_cardNos = cur.execute("SELECT no FROM cards").fetchall()
+        # 1.card_no:编号； 
+        # 2.card_name:卡名； 
+        # 3.addition:附加优惠信息； 
+        # 4.monthly_cost:月租;
+        # 5.detail_image_url:详细图片信息； 
+        # 6.detail_info_url:详细说明信息; 
+        # 7.ispublish:是否发布； 
+        # 8.state:生效状态
+        cur.execute("CREATE TABLE IF NOT EXISTS cards(card_no, card_name, addition, monthly_cost, detail_image_url, detail_info_url, ispublish, state)")
+        fetch_cardNos = cur.execute("SELECT card_no FROM cards").fetchall()
         card_no_list = [item[0] for item in fetch_cardNos]
         for card in cards_data:
-            if card['code'] not in card_no_list:
-                cur.execute("""INSERT INTO cards VALUES (?, ?, ?, ?, ?, ?, ?)""",
-                    (card["code"],card["card_name"],card["addition"],card["monthly_cost"],card["detail_url"],0,1)
+            if card['card_no'] not in card_no_list:
+                cur.execute("""INSERT INTO cards VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                    (card["card_no"],card["card_name"],card["addition"],card["monthly_cost"],card["detail_image_url"],card["detail_info_url"],0,1)
                 )
         con.commit()
         res = cur.execute("SELECT * FROM cards")
         #print(res.fetchall())
-        self.export_excel_from_db(res.fetchall())
+        #self.export_excel_from_db(res.fetchall())
 
-    def work(self):
-        url = r'http://ka.05321888.com/ka/taocan/index.html'
-        html = self.get_decoded_html(url)
-        # print(html)
-        cards_info = self.get_cards_info(html)
-        return cards_info
 
-                
 
 if __name__ == '__main__':
-    r1 = cards_downloader()
-    card_info = r1.work()
+    r1 = Robot()
+    r1.work()
+    # get_monthly_cost()
+    
