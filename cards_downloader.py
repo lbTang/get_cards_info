@@ -29,8 +29,7 @@ class Robot(object):
         url = r'http://ka.05321888.com/ka/taocan/index.html'
         html = self.get_decoded_html(r'http://ka.05321888.com/ka/taocan/index.html')
         cards_info = self.get_info(html)
-        # self.generate_excel(cards_info)
-        self.connect_sqlite(cards_info)
+        self.write_into_db(cards_info)
 
 
     def get_decoded_html(self,url):
@@ -98,29 +97,30 @@ class Robot(object):
                 result.append({'card_no':card_no,'card_name':card_name,'addition':addition,'monthly_cost':monthly_cost,'detail_image_url':detail_image_url,'detail_info_url':detail_info_url})
         return result
     
-    def export_excel_from_web(self,write_info):
+
+    def export_excel(self,cards_data):
         wb = xlwt.Workbook()
         ws = wb.add_sheet('sheet1')
         # 写入第一行内容  ws.write(a, b, c)  a：行，b：列，c：内容
-        titleList = ['编号', '卡名', '附加', '月租','套餐链接','发布状态']
+        titleList = ['编号', '卡名', '附加', '月租','详细图片信息','发布状态']
         for i in range(0, len(titleList)):
             ws.write(0, i, titleList[i])
 
         # 所需获取数据对应key
-        jsonKeyLIst = ['code', 'card_name', 'addition', 'monthly_cost','detail_image_url']
+        jsonKeyLIst = ['card_no','card_name','addition','monthly_cost','detail_image_url','detail_info_url']
 
-        for i in range(0, len(write_info)):
+        for i in range(0, len(cards_data)):
             for j in range(0, len(jsonKeyLIst)):
                 # 文件中已写入一行title，所以这里写入内容时行号为i+1而非i
                 # 列号为j
-                ws.write(i + 1, j, write_info[i][jsonKeyLIst[j]])
+                ws.write(i + 1, j, cards_data[i][jsonKeyLIst[j]])
 
         # 保存文件
-        wb.save('./流量套餐列表_网络.csv')
-        wb.save('./流量套餐列表_网络.xls')
+        wb.save('./流量套餐列表.csv')
+        wb.save('./流量套餐列表.xls')
 
 
-    def connect_sqlite(self,cards_data):
+    def write_into_db(self,cards_data):
         con = sqlite3.connect("cards_data.db")
         cur = con.cursor()
         # 1.card_no:编号； 
@@ -149,5 +149,4 @@ class Robot(object):
 if __name__ == '__main__':
     r1 = Robot()
     r1.work()
-    # get_monthly_cost()
     
