@@ -22,7 +22,7 @@ import requests
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer,encoding='utf-8')
 
 
-class Robot(object):
+class Image_downloader(object):
 
     def work(self):
         url = r'http://ka.05321888.com/ka/taocan/1459.html'
@@ -72,12 +72,7 @@ class Robot(object):
         with open(local_dir+image_detail_name, 'wb') as f:
             f.write(requests.get(image_detail_url).content)
 
-
-
-    
-
-
 if __name__ == '__main__':
-    r1 = Robot()
+    r1 = Image_downloader()
     r1.work()
     
