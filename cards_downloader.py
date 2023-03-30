@@ -25,13 +25,6 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer,encoding='utf-8')
 
 class Robot(object):
 
-    def work(self):
-        url = r'http://ka.05321888.com/ka/taocan/index.html'
-        html = self.get_decoded_html(url)
-        cards_info = self.get_cards_data(html)
-        self.write_into_db(cards_info)
-        self.download_images(cards_info)
-
     def get_decoded_html(self,url):
         response = requests.get(url)
         html = response.content
@@ -127,6 +120,8 @@ class Robot(object):
         res = cur.execute("SELECT * FROM cards")
         #print(res.fetchall())
         #self.export_excel_from_db(res.fetchall())
+
+        
     
     def download_images(self,cards_data):
         img_downloader = Image_downloader()
@@ -134,7 +129,13 @@ class Robot(object):
             img_downloader.download_images(card['detail_image_url'])
             img_downloader.download_html_file(card['detail_info_url'])
         
+    def work(self):
+        url = r'http://ka.05321888.com/ka/taocan/index.html'
+        html = self.get_decoded_html(url)
 
+        cards_info = self.get_cards_data(html)
+        self.write_into_db(cards_info)
+        self.download_images(cards_info)
 
 
 if __name__ == '__main__':
