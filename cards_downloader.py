@@ -16,6 +16,8 @@ import xlwt
 import sqlite3
 import re
 import requests
+from cards_images_download import Image_downloader
+
 
 #定义输出结果的编码为utf-8
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer,encoding='utf-8')
@@ -28,6 +30,7 @@ class Robot(object):
         html = self.get_decoded_html(url)
         cards_info = self.get_cards_data(html)
         self.write_into_db(cards_info)
+        self.download_images(cards_info)
 
     def get_decoded_html(self,url):
         response = requests.get(url)
@@ -124,6 +127,13 @@ class Robot(object):
         res = cur.execute("SELECT * FROM cards")
         #print(res.fetchall())
         #self.export_excel_from_db(res.fetchall())
+    
+    def download_images(self,cards_data):
+        img_downloader = Image_downloader()
+        for card in cards_data:
+            img_downloader.download_images(card['detail_image_url'])
+            img_downloader.download_html_file(card['detail_info_url'])
+        
 
 
 
