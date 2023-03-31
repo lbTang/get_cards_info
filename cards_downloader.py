@@ -20,7 +20,7 @@ from cards_images_download import Image_downloader
 
 
 #定义输出结果的编码为utf-8
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer,encoding='utf-8')
+#sys.stdout = io.TextIOWrapper(sys.stdout.buffer,encoding='utf-8')
 
 
 class Robot(object):
@@ -28,7 +28,7 @@ class Robot(object):
     def get_decoded_html(self,url):
         response = requests.get(url)
         html = response.content
-        html_decoded = html.decode('gbk','ignore')
+        html_decoded = html.decode('utf8','ignore')
         return html_decoded
     
     def get_cards_data(self,html):
@@ -130,12 +130,12 @@ class Robot(object):
             img_downloader.download_html_file(card['detail_info_url'])
         
     def work(self):
-        url = r'http://ka.05321888.com/ka/taocan/index.html'
+        url = r'http://tcdq.05321888.com/page/taocan/index.html'
         html = self.get_decoded_html(url)
-
-        cards_info = self.get_cards_data(html)
-        self.write_into_db(cards_info)
-        self.download_images(cards_info)
+        print(html.encode('utf-8').decode(sys.stdout.encoding))
+        # cards_info = self.get_cards_data(html)
+        # self.write_into_db(cards_info)
+        # self.download_images(cards_info)
 
 
 if __name__ == '__main__':
