@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>套餐大全</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../../css/layuimini.css" media="all">
+    <script src="..\..\lib\layui-v2.6.3\layui.js" charset="utf-8"></script>
+    <script src="..\..\lib\jquery-3.4.1\jquery-3.4.1.min.js" charset="utf-8"></script>
+    <link rel="stylesheet" href="..\..\lib\layui-v2.6.3\css\layui.css" media="all">
+    <script src="..\..\lib\swiper\swiper-3.4.2.min.js"></script>
+    <link rel="stylesheet" href="..\..\lib\swiper\swiper-3.4.2.min.css">
+    <link rel="stylesheet" href="..\..\css\bq.css">
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css">
+    <script src="https://cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js"></script>
+    <style type="text/css">
+        body {
+            margin-bottom: 60px !important;
+        }
+        a,
+        button,
+        input {
+            -webkit-tap-highlight-color: rgba(255, 0, 0, 0);
+        }
+        ul,
+        li {
+            list-style: none;
+            margin: 0;
+            padding: 0
+        }
+        .top_bar {
+            position: fixed;
+            z-index: 900;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            margin: auto;
+            font-family: Helvetica, Tahoma, Arial, Microsoft YaHei, sans-serif;
+        }
+        .top_menu {
+            display: -webkit-box;
+            border-top: 1px solid #3D3D46;
+            display: block;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.7);
+            height: 48px;
+            display: -webkit-box;
+            display: box;
+            margin: 0;
+            padding: 0;
+            -webkit-box-orient: horizontal;
+            background: -webkit-gradient(linear, 0 0, 0 100%, from(#524945), to(#48403c), color-stop(60%, #524945));
+            box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.1) inset;
+        }
+        .top_bar .top_menu>li {
+            -webkit-box-flex: 1;
+            position: relative;
+            text-align: center;
+        }
+        .top_menu li:first-child {
+            background: none;
+        }
+        .top_bar .top_menu>li>a {
+            height: 48px;
+            margin-right: 1px;
+            display: block;
+            text-align: center;
+            color: #FFF;
+            text-decoration: none;
+            text-shadow: 0 1px rgba(0, 0, 0, 0.3);
+            -webkit-box-flex: 1;
+        }
+        .top_bar .top_menu>li.home {
+            max-width: 70px
+        }
+        .top_bar .top_menu>li.home a {
+            height: 66px;
+            width: 66px;
+            margin: auto;
+            border-radius: 60px;
+            position: relative;
+            top: -22px;
+            left: 2px;
+            background: url('images/home.png') no-repeat center center;
+            background-size: 100% 100%;
+        }
+        .top_bar .top_menu>li>a label {
+            overflow: hidden;
+            margin: 0 0 0 0;
+            font-size: 12px;
+            display: block !important;
+            line-height: 18px;
+            text-align: center;
+        }
+        .top_bar .top_menu>li>a img {
+            padding: 3px 0 0 0;
+            height: 24px;
+            width: 24px;
+            color: #fff;
+            line-height: 48px;
+            vertical-align: middle;
+        }
+        .top_bar li:first-child a {
+            display: block;
+        }
+        .menu_font {
+            text-align: left;
+            position: absolute;
+            right: 10px;
+            z-index: 500;
+            background: -webkit-gradient(linear, 0 0, 0 100%, from(#524945), to(#48403c), color-stop(60%, #524945));
+            border-radius: 5px;
+            width: 120px;
+            margin-top: 10px;
+            padding: 0;
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.3);
+        }
+        .menu_font.hidden {
+            display: none;
+        }
+        .menu_font {
+            top: inherit !important;
+            bottom: 60px;
+        }
+        .menu_font li a {
+            height: 40px;
+            margin-right: 1px;
+            display: block;
+            text-align: center;
+            color: #FFF;
+            text-decoration: none;
+            text-shadow: 0 1px rgba(0, 0, 0, 0.3);
+            -webkit-box-flex: 1;
+        }
+        .menu_font li a {
+            text-align: left !important;
+        }
+        .top_menu li:last-of-type a {
+            background: none;
+            overflow: hidden;
+        }
+        .menu_font:after {
+            top: inherit !important;
+            bottom: -6px;
+            border-color: #48403c rgba(0, 0, 0, 0) rgba(0, 0, 0, 0);
+            border-width: 6px 6px 0;
+            position: absolute;
+            content: "";
+            display: inline-block;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            left: 80%;
+        }
+        .menu_font li {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+        }
+        .menu_font li:first-of-type {
+            border-top: 0;
+        }
+        .menu_font li:last-of-type {
+            border-bottom: 0;
+        }
+        .menu_font li a {
+            height: 40px;
+            line-height: 40px !important;
+            position: relative;
+            color: #fff;
+            display: block;
+            width: 100%;
+            text-indent: 10px;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+        .menu_font li a img {
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+            margin-top: -2px;
+            color: #fff;
+            line-height: 40px;
+            vertical-align: middle;
+        }
+        .menu_font>li>a label {
+            padding: 3px 0 0 3px;
+            font-size: 14px;
+            overflow: hidden;
+            margin: 0;
+        }
+        #menu_list0 {
+            right: 0;
+            left: 10px;
+        }
+        #menu_list0:after {
+            left: 20%;
+        }
+        #sharemcover {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            z-index: 20000;
+        }
+        #sharemcover img {
+            position: fixed;
+            right: 18px;
+            top: 5px;
+            width: 260px;
+            height: 180px;
+            z-index: 20001;
+            border: 0;
+        }
+        .top_bar .top_menu>li>a:hover,
+        .top_bar .top_menu>li>a:active {
+            background-color: #333;
+        }
+        .menu_font li a:hover,
+        .menu_font li a:active {
+            background-color: #333;
+        }
+        .menu_font li:first-of-type a {
+            border-radius: 5px 5px 0 0;
+        }
+        .menu_font li:last-of-type a {
+            border-radius: 0 0 5px 5px;
+        }
+        #plug-wrap {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0);
+            z-index: 800;
+        }
+        #cate18 .device {
+            bottom: 49px;
+        }
+        #cate18 #indicator {
+            bottom: 240px;
+        }
+        #cate19 .device {
+            bottom: 49px;
+        }
+        #cate19 #indicator {
+            bottom: 330px;
+        }
+        #cate19 .pagination {
+            bottom: 60px;
+        }
+        body {
+            max-width: 700px;
+            margin: 0 auto !important;
+        }
+        .layui-table-cell {
+            font-size: 14px;
+            padding: 0 5px;
+            height: auto;
+            overflow: visible;
+            text-overflow: inherit;
+            white-space: normal;
+            word-break: break-all;
+        }
+        /*设置数据表表头字体*/
+        .layui-table th {
+            /*表头内容居中显示*/
+            text-align: center;
+            font-weight: bold;
+        }
+        .layui-table tr {
+            /*表头内容居中显示*/
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="swiper-container">
+        <!--头图轮播-->
+        <div class="swiper-wrapper">
+            <div class="swiper-slide"><img
+                    style="display: inline-block; width: 100%; max-width: 100%; height: auto;border-radius: 10px;"
+                    src="..\..\images\1.jpg" alt=""></div>
+            <div class="swiper-slide"><img
+                    style="display: inline-block; width: 100%; max-width: 100%; height: auto;border-radius: 10px;"
+                    src="..\..\images\2.jpg" alt=""></div>
+            <div class="swiper-slide"><img
+                    style="display: inline-block; width: 100%; max-width: 100%; height: auto;border-radius: 10px;"
+                    src="..\..\images\3.jpg" alt=""></div>
+        </div>
+        <div class="swiper-pagination"></div>
+    </div>
+    <b>
+        <div style="text-align:center;color:SlateBlue">
+            浏览量<span id="busuanzi_value_page_pv"></span></span><br>
+            本站无任何联系方式代理直接转发 | 内容实时更新
+        </div>
+    </b>
+    <blockquote class="layui-elem-quote">
+        <div style="text-align: center;">
+            <div style="width: 70%;text-align: center;" class="layui-input-inline">
+                <input style="text-align: center;color: rgb(0, 0, 0);width: 100%;" id="cz" name="zhi"
+                    class="layui-input" placeholder="模糊搜索支持：运营商 标题 编码">
+            </div>
+            <button class="layui-btn" onClick="gettcdqlist()">查找</button>
+        </div>
+    </blockquote>
+    <table id="table" lay-filter="table"></table>
+    <br><br><br><br>
+    <script type="text/javascript">//获取基本参数
+        function geturl(data) {
+            with (data) {
+                tcdqurl = data.url;
+                tcdqurl = 'http://43.139.67.76:92';
+                console.log(tcdqurl);
+            }
+        }
+    </script>
+    <script src="../../date/config.json?cb=geturl"></script>
+    <script>//渲染列表
+        function gettcdqlist() {
+            layui.use('table', function () {
+                var table = layui.table;
+                var cz = document.getElementById('cz').value;
+                table.render({
+                    elem: '#table'
+                    , url: tcdqurl + '/tcdq_1?cz=' + cz + "&lx=" + lx
+                    , page: { //支持传入 laypage 组件的所有参数（某些参数除外，如：jump/elem） - 详见文档
+                        layout: ['limit', 'count', 'prev', 'next'] //自定义分页布局
+                        //,curr: 5 //设定初始在第 5 页
+                        , groups: 1 //只显示 1 个连续页码
+                        , first: false //不显示首页
+                        , last: false //不显示尾页
+                    }
+                    , cols: [[
+                        { field: 'id', width: 100, title: '产品ID', hide: true }
+                        , { field: 'bt', width: '80%', title: '标题', sort: true }
+                        //, { field: 'tt', width: 100, title: '图片' }
+                        , { field: 'tt', title: '图片', templet: function (d) { return '<div style="text-align: center;" ><img src="' + d.tt + '" ' + 'alt="" width="50px" height="50px"></a></div>'; } }
+                    ]]
+                });
+            });
+        }
+    </script>
+    <!-- 以下是导航菜单 -->
+    <div class="top_bar">
+        <nav>
+            <ul id="top_menu" class="top_menu">
+                <li><a href="index.html?lx=3"><img src="..\..\images\plugmenu1.png"><label>电信</label></a></li>
+                <li><a href="index.html?lx=1"><img src="..\..\images\plugmenu3.png"><label>移动</label></a></li>
+                <li class="home"><a href="index.html"></a></li>
+                <li><a href="index.html?lx=2"><img src="..\..\images\plugmenu5.png"><label>联通</label></a></li>
+                <!-- <li><a href="4.html"><img src="images/plugmenu9.png"><label>代理</label></a></li> -->
+                <!-- 子菜单 -->
+                <li><a onclick="javascript:displayit(3)"><img src="..\..\images\plugmenu6.png"><label>其他</label></a>
+                    <ul id="menu_list3" class="menu_font" style=" display:none">
+                        <li> <a href="xgzl.html"><img src="..\..\images\plugmenu7.png"><label>相关资料</label></a></li>
+                        <li> <a onClick="daili()"><img src="..\..\images\plugmenu9.png"><label>关于代理</label></a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </div>
+    <div id="plug-wrap" onclick="closeall()" style="display: none;"></div>
+    <script>//导航二菜单
+        function displayit(n) {
+            for (i = 0; i < 4; i++) {
+                if (i == n) {
+                    var id = 'menu_list' + n;
+                    if (document.getElementById(id).style.display == 'none') {
+                        document.getElementById(id).style.display = '';
+                        document.getElementById("plug-wrap").style.display = '';
+                    } else {
+                        document.getElementById(id).style.display = 'none';
+                        document.getElementById("plug-wrap").style.display = 'none';
+                    }
+                } else {
+                    if ($('#menu_list' + i)) {
+                        $('#menu_list' + i).css('display', 'none');
+                    }
+                }
+            }
+        }
+        function closeall() {
+            var count = document.getElementById("top_menu").getElementsByTagName("ul").length;
+            for (i = 0; i < count; i++) {
+                document.getElementById("top_menu").getElementsByTagName("ul").item(i).style.display = 'none';
+            }
+            document.getElementById("plug-wrap").style.display = 'none';
+        }
+        document.addEventListener('WeixinJSBridgeReady', function onBridgeReady() {
+            WeixinJSBridge.call('hideToolbar');
+        });
+    </script>
+    <script>//获取url中的参数返回json
+        function getRequest() {
+            var url = location.search; //获取url中"?"符后的字串
+            var theRequest = new Object();
+            if (url.indexOf("?") != -1) {
+                var str = url.substr(1);
+                strs = str.split("&");
+                for (var i = 0; i < strs.length; i++) {
+                    theRequest[strs[i].split("=")[0]] = unescape(strs[i].split("=")[1]);
+                }
+            }
+            return theRequest;
+        };
+        function daili() {
+            layer.open({
+                type: 1
+                , title: '关于代理' //不显示标题栏
+                , closeBtn: false
+                , area: '300px;'
+                , shade: 0.8
+                , id: 'LAY_layuipro' //设定一个id，防止重复弹出
+                , btn: ['已阅']
+                , btnAlign: 'c'
+                , moveType: 1 //拖拽模式，0或者1
+                , content: '<div style="padding: 50px; line-height: 22px; background-color: #393D49; color: #fff; font-weight: 300;">本站无任何联系方式<br>请联系您的渠道经理获取报价及代理流程^_^</div>'
+            });
+        }
+    </script>
+    <script>//图片轮播
+        var mySwiper1 = new Swiper('.swiper-container', {
+            autoplay: 2000,
+            loop: true,
+            pagination: '.swiper-pagination',
+        })
+        var seconds = 100;//单位秒
+    </script>
+    <script>//页面触发
+        //这里要判断url里有没有参数 移动联通电信
+        layui.use('element', function () {
+            var element = layui.element;
+        });
+        var urldate = getRequest();//获取url参数
+        lx = urldate.lx;
+        if (lx == 1) {
+            $(document).attr("title", '套餐大全-移动');
+        } if (lx == 2) {
+            $(document).attr("title", '套餐大全-联通');
+        } if (lx == 3) {
+            $(document).attr("title", '套餐大全-电信');
+        }
+        gettcdqlist();
+        layui.use('table', function () {
+            var table = layui.table;
+            table.on('row(table)', function (obj) {
+                with (obj.data) {
+                    //window.location.href = "q_tcdq_xq.html?";
+                    window.location.href = "xq.html?id=" + id;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

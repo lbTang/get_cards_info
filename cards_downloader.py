@@ -17,7 +17,7 @@ import sqlite3
 import re
 import requests
 from cards_images_download import Image_downloader
-
+import json
 
 #定义输出结果的编码为utf-8
 #sys.stdout = io.TextIOWrapper(sys.stdout.buffer,encoding='utf-8')
@@ -130,10 +130,43 @@ class Robot(object):
             img_downloader.download_html_file(card['detail_info_url'])
         
     def work(self):
-        url = r'http://tcdq.05321888.com/page/taocan/index.html'
-        html = self.get_decoded_html(url)
-        print(html.encode('utf-8').decode(sys.stdout.encoding))
-        # cards_info = self.get_cards_data(html)
+        # url = r'http://tcdq.05321888.com/page/taocan/index.html'
+        # html = self.get_decoded_html(url)
+        url = r"http://43.139.67.76:92/tcdq_1?cz=&lx=undefined&limit=999"
+        response = requests.get(url)
+        r1 = response.content.decode('gbk','ignore')
+        print(r1)
+        j1  = json.loads(r1)
+        print(j1['count'])
+        
+        cards_list = j1['data']
+        for card in cards_list:
+            # 1.card_id:编号； 
+            card_id = card['id']
+            # 2.card_name:卡名； 
+            cardInfo = card['bt'].split(' ')[-1].split('+')
+            result = re.match(r'^(.*卡)(\d+元)包*(\d+[G|M].*)?$',cardInfo[0])
+            card_name = result.group(1) 
+            # 3.addition:附加信息； 
+            addition = ""
+            if (len(cardInfo)>2):
+                for item in cardInfo[2:]:
+                    addition += item+" "
+            # 4.monthly_cost:月租;
+            monthly_cost = int(re.search(r'\d+',result.group(2)).group(0))
+            # 5.generic_traffic:通用流量
+            generic_traffic = int(re.search(r'\d+',result.group(3)).group(0))
+            # 6.detail_info_url:详细说明信息; 
+            detail_info_url = "http://tcdq.05321888.com/page/taocan/xq.html?id="+str(card_id)
+
+            # 7.icon_image_url:图标链接； 
+            # 7.detail_image_url:详细介绍链接； 
+            # 8.ispublish:是否发布,0未发布，1已发布； 
+            ispublish = 0
+            # 9.state:生效状态，0下架，1在架；
+            state = 1
+        # cards_info = self.get_cards_data(r1)
+        # print(cards_info)
         # self.write_into_db(cards_info)
         # self.download_images(cards_info)
 
